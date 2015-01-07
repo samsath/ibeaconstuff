@@ -74,18 +74,6 @@ public class MainActivity extends ActionBarActivity {
             Intent intent = new Intent(MainActivity.this, Settings.class);
             startActivityForResult(intent, PICK_CONTENT_REQUEST);
         }
-        switch(id){
-            case R.id.action_settings:
-                Intent intent = new Intent(MainActivity.this, Settings.class);
-                startActivityForResult(intent, PICK_CONTENT_REQUEST);
-            case R.id.action_sync:
-                ServerSync sync = new ServerSync(this);
-                if(settings.contains(CURL)){
-                    data.add(settings.getString(CURL,""));
-                    sync.execute(data);
-                }
-
-        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -109,7 +97,7 @@ public class MainActivity extends ActionBarActivity {
     /**
      * The webview fragment
      */
-    public class WebViewFragment extends Fragment {
+    public static class WebViewFragment extends Fragment {
 
         private String currentURL;
 

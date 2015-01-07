@@ -30,11 +30,6 @@
             android:label="@string/title_activity_settings" >
         </activity>
         <service
-            android:name=".ServerSync"
-            android:enabled="true"
-            android:exported="true" >
-        </service>
-        <service
             android:name=".beaconSearch"
             android:enabled="true"
             android:exported="true" >

@@ -104,7 +104,7 @@ public class beaconSearch extends Service implements IBeaconListener{
 
     @Override
     public void exitRegion(IBeacon ibeacon) {
-           scanBeacons();
+        scanBeacons();
     }
 
     @Override
