@@ -46,7 +46,7 @@ public class beaconSearch extends Service implements IBeaconListener{
 
         BeaconScanFor();
 
-        Log.d("MAbeacon", "Service Start");
+        Log.d("MAbeacon","Search Service Start");
         return null;
     }
 

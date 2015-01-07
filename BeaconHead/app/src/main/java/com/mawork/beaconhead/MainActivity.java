@@ -18,14 +18,21 @@ import android.os.Build;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class MainActivity extends ActionBarActivity {
 
 
     static SharedPreferences settings;
+
     public static final String BURL = "beaconURL";
+    public static final String CURL = "contentURL";
+
     public String url;
     static final int PICK_CONTENT_REQUEST = 5;
+    public List<String> data = new ArrayList<String>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +80,11 @@ public class MainActivity extends ActionBarActivity {
                 startActivityForResult(intent, PICK_CONTENT_REQUEST);
             case R.id.action_sync:
                 ServerSync sync = new ServerSync(this);
-                sync.execute();
+                if(settings.contains(CURL)){
+                    data.add(settings.getString(CURL,""));
+                    sync.execute(data);
+                }
+
         }
 
         return super.onOptionsItemSelected(item);
@@ -98,7 +109,6 @@ public class MainActivity extends ActionBarActivity {
     /**
      * The webview fragment
      */
-
     public class WebViewFragment extends Fragment {
 
         private String currentURL;

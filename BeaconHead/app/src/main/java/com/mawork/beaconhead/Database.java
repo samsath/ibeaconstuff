@@ -33,18 +33,18 @@ public class Database extends SQLiteOpenHelper {
 
     public Database(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        Log.d("MA","Database Created");
+        Log.d("MAbeacon","Database Created");
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        Log.d("MA","Database Create");
+        Log.d("MAbeacon","Database Create");
         db.execSQL(CREATE_TABLE_BEACON);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        Log.d("MA","Database update");
+        Log.d("MAbeacon","Database update");
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_BEACON);
 
         onCreate(db);
@@ -74,6 +74,9 @@ public class Database extends SQLiteOpenHelper {
 
             beacon_id = db.insert(TABLE_BEACON, null, values);
         }
+
+        Log.d("MAbeacon","beacon id="+beacon_id);
+        Log.d("MAbeacon",beck.toString());
 
         return beacon_id;
     }

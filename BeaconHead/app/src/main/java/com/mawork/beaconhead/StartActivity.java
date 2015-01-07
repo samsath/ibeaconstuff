@@ -6,9 +6,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class StartActivity extends ActionBarActivity {
@@ -17,6 +21,8 @@ public class StartActivity extends ActionBarActivity {
     static final int PICK_CONTENT_REQUEST = 5;
     public static final String CURL = "contentURL";
     static SharedPreferences settings;
+    public List<String> datastring = new ArrayList<String>();
+    public ServerSync sync;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +33,7 @@ public class StartActivity extends ActionBarActivity {
         CharSequence text;
         int duration = Toast.LENGTH_SHORT;
 
+        sync = new ServerSync(this);
 
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
@@ -46,8 +53,10 @@ public class StartActivity extends ActionBarActivity {
         settings = this.getSharedPreferences("MAbeacon", MODE_WORLD_READABLE);
         if(settings.contains(CURL)){
             startService(new Intent(this, beaconSearch.class));
-            ServerSync sync = new ServerSync(this);
-            sync.execute();
+            if(settings.contains(CURL)){
+                datastring.add(settings.getString(CURL,""));
+                sync.execute(datastring);
+            }
         }else{
             Intent intent = new Intent(StartActivity.this, Settings.class);
             startActivityForResult(intent, PICK_CONTENT_REQUEST);
@@ -83,8 +92,12 @@ public class StartActivity extends ActionBarActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         if(requestCode == PICK_CONTENT_REQUEST){
             if(resultCode == RESULT_OK){
-                startService(new Intent(this, ServerSync.class));
+                if(settings.contains(CURL)){
+                    datastring.add(settings.getString(CURL,""));
+                    sync.execute(datastring);
+                }
                 startService(new Intent(this, beaconSearch.class));
+                Log.d("MAbeacon","Search Start");
             }
         }
     }

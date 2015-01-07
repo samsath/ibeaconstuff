@@ -19,8 +19,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
 
-public class ServerSync extends AsyncTask<String, Integer, JSONObject> {
+public class ServerSync extends AsyncTask<List<String>, Integer, JSONObject> {
 
     public Database db;
     public String curl;
@@ -35,10 +36,7 @@ public class ServerSync extends AsyncTask<String, Integer, JSONObject> {
     @Override
     protected void onPreExecute(){
         super.onPreExecute();
-        SharedPreferences settings = context.getSharedPreferences("MAbeacon",1);
-        String url = settings.getString("contentURL","");
 
-        curl = "https://"+url+"/beacon/";
 
         db = new Database(context);
         db.removeAll();
@@ -58,13 +56,21 @@ public class ServerSync extends AsyncTask<String, Integer, JSONObject> {
 
 
     @Override
-    protected JSONObject doInBackground(String... params) {
+    protected JSONObject doInBackground(List<String>... request) {
         /*
         This will get all the Beacon information from the sellected website
+
+
          */
 
+        String url = request[0].get(0);
+
+        curl = "https://"+url+"/beacon/all/";
+        Log.d("MAbeacon",curl);
+
         try{
-            HttpPost httpPost = new HttpPost(curl+"/beacon/all/");
+            HttpPost httpPost = new HttpPost(curl);
+            Log.d("MAbeacon",httpPost.toString());
             HttpResponse response = httpClient.execute(httpPost);
 
             HttpEntity entity = response.getEntity();
