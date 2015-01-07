@@ -46,8 +46,9 @@ public class Settings extends Activity {
 
         editor.apply();
 
-        Intent intent = new Intent(Settings.this, MainActivity.class);
-        startActivity(intent);
+        Intent intent = new Intent();
+        setResult(RESULT_OK, intent);
+        finish();
     }
 
 

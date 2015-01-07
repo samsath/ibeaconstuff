@@ -25,7 +25,7 @@ public class Database extends SQLiteOpenHelper {
 
     private static final String CREATE_TABLE_BEACON = "CREATE TABLE " + TABLE_BEACON +
             "(" + KEY_ID +" INTEGER PRIMARY KEY," +
-            KEY_UUID + " BLOB," +
+            KEY_UUID + " STRING," +
             KEY_MAJOR +" INTEGER," +
             KEY_MINOR + " INTEGER, " +
             KEY_URL + " TEXT" +
@@ -50,6 +50,13 @@ public class Database extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    public void removeAll(){
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_BEACON);
+        onCreate(db);
+
+    }
+
     public long createBeacon(Beacon beck){
 
         SQLiteDatabase db = this.getWritableDatabase();
@@ -71,7 +78,7 @@ public class Database extends SQLiteOpenHelper {
         return beacon_id;
     }
 
-    public String getURL(byte[] uuid, int major, int minor){
+    public String getURL(String uuid, int major, int minor){
         SQLiteDatabase db = this.getWritableDatabase();
 
         String url;
@@ -104,7 +111,7 @@ public class Database extends SQLiteOpenHelper {
                 do{
                     Beacon bec = new Beacon();
                     bec.id = c.getInt(c.getColumnIndex(KEY_ID));
-                    bec.uuid = c.getBlob(c.getColumnIndex(KEY_UUID));
+                    bec.uuid = c.getString(c.getColumnIndex(KEY_UUID));
                     bec.major = c.getInt(c.getColumnIndex(KEY_MAJOR));
                     bec.minor = c.getInt(c.getColumnIndex(KEY_MINOR));
                     bec.url = c.getString(c.getColumnIndex(KEY_URL));

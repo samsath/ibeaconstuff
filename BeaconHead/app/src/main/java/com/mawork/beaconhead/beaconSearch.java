@@ -46,7 +46,7 @@ public class beaconSearch extends Service implements IBeaconListener{
 
         BeaconScanFor();
 
-        Log.d("MA", "Service Start");
+        Log.d("MAbeacon", "Service Start");
         return null;
     }
 
@@ -71,28 +71,24 @@ public class beaconSearch extends Service implements IBeaconListener{
         // can filter the UUID so only some will appear
         //ibp.setScanUUID(UUID);
 
-        if(!IBeaconProtocol.configureBluetoothAdapter(context)){
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_BLUETOOTH_ENABLE);
-        }else{
-            ibp.setListener(this);
-            if(ibp.isScanning()){
-                ibp.scanIBeacons(false);
-            }
-            ibp.reset();
-            ibp.scanIBeacons(true);
+        ibp.setListener(this);
+        if(ibp.isScanning()){
+            ibp.scanIBeacons(false);
         }
+        ibp.reset();
+        ibp.scanIBeacons(true);
+
     }
 
 
     @Override
     public void enterRegion(IBeacon ibeacon) {
 
-        Log.i("MA","In region of "+ibeacon.toString());
+        Log.i("MAbeacon","In region of "+ibeacon.toString());
 
         String url;
 
-        url = db.getURL(ibeacon.getUuid(),ibeacon.getMajor(),ibeacon.getMinor());
+        url = db.getURL(ibeacon.getUuid().toString(),ibeacon.getMajor(),ibeacon.getMinor());
 
         if(!url.isEmpty()){
             // If the beacon is found then the head pops up
@@ -123,13 +119,13 @@ public class beaconSearch extends Service implements IBeaconListener{
 
     @Override
     public void operationError(int status) {
-        Log.d("MA","Bluetoother error:"+status);
+        Log.d("MAbeacon","Bluetoother error:"+status);
     }
 
 
     @Override
     public void onDestroy(){
         ibp.stopScan();
-        Log.d("MA", "Service Destroyed");
+        Log.d("MAbeacon", "Service Destroyed");
     }
 }

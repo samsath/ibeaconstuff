@@ -3,7 +3,7 @@ from django_extensions.db.fields import AutoSlugField
 
 class Beacons(models.Model):
     name = models.CharField(max_length=100, blank=True, null=True)
-    uuid = models.CharField(max_length=32, verbose_name=u'UUID for beacon')
+    uuid = models.CharField(max_length=100, verbose_name=u'UUID for beacon')
     major = models.IntegerField(verbose_name=u'Major value for beacon', blank=True, null=True)
     minor = models.IntegerField(verbose_name=u'Minor value for beacon', blank=True, null=True)
     descript = models.TextField(blank=True, null=True, verbose_name=u'Description', help_text=u'Could be ')
