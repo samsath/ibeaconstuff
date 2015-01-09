@@ -9,5 +9,6 @@
     <string name="title_activity_web_view">WebViewActivity</string>
     <string name="title_activity_start">StartActivity</string>
     <string name="action_sync">Sync</string>
+    <string name="title_activity_web">WebActivity</string>
 
 </resources>

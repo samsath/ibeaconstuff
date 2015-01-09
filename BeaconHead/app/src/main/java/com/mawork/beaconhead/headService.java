@@ -4,6 +4,7 @@ package com.mawork.beaconhead;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.PixelFormat;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -15,15 +16,21 @@ public class headService extends Service {
 
     private WindowManager windowManager;
     private ImageView chatHead;
+    public String url;
 
     @Override
     public IBinder onBind(Intent intent) {
+
+        url = intent.getExtras().getString("URL");
+
         return null;
     }
 
     @Override
     public void onCreate(){
         super.onCreate();
+
+
 
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 
@@ -51,16 +58,14 @@ public class headService extends Service {
             private float initialTouchY;
 
             @Override public boolean onTouch(View v, MotionEvent event) {
-                Intent intent = new Intent(headService.this, MainActivity.class);
+                Intent intent = new Intent(headService.this, WebActivity.class);
+                intent.putExtra("URL",url);
                 startActivity(intent);
 
                 return false;
             }
         });
-
-
     }
-
 
     @Override
     public void onDestroy(){

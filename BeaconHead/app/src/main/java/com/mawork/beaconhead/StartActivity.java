@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import org.apache.http.HttpEntity;
@@ -28,6 +29,11 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.easibeacon.protocol.IBeacon;
+import com.easibeacon.protocol.IBeaconListener;
+import com.easibeacon.protocol.IBeaconProtocol;
+import com.easibeacon.protocol.Utils;
+
 
 public class StartActivity extends ActionBarActivity {
 
@@ -35,6 +41,10 @@ public class StartActivity extends ActionBarActivity {
     static final int PICK_CONTENT_REQUEST = 5;
     public static final String CURL = "contentURL";
     static SharedPreferences settings;
+
+    public Intent listActivity;
+    public Intent search;
+
 
 
     @Override
@@ -46,7 +56,8 @@ public class StartActivity extends ActionBarActivity {
         CharSequence text;
         int duration = Toast.LENGTH_SHORT;
 
-
+        listActivity = new Intent(this, MainActivity.class);
+        search = new Intent(context, beaconSearch.class);
 
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
@@ -55,6 +66,7 @@ public class StartActivity extends ActionBarActivity {
             toast.show();
             onDestroy();
         }
+
         if (!mBluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
@@ -65,16 +77,22 @@ public class StartActivity extends ActionBarActivity {
 
         settings = this.getSharedPreferences("MAbeacon", MODE_WORLD_READABLE);
         if(settings.contains(CURL)){
-            startService(new Intent(this, beaconSearch.class));
+
+            //Intent search = new Intent(context, beaconSearch.class);
+            //startService(search);
+
             if(settings.contains(CURL)){
-                DownloadBeaconData sync = new DownloadBeaconData(this);
+                DownloadBeaconData sync = new DownloadBeaconData();
                 sync.execute(new String[] {settings.getString(CURL,"")});
+
+
+                startService(search);
+                startActivity(listActivity);
             }
         }else{
             Intent intent = new Intent(StartActivity.this, Settings.class);
             startActivityForResult(intent, PICK_CONTENT_REQUEST);
         }
-
 
     }
 
@@ -106,11 +124,12 @@ public class StartActivity extends ActionBarActivity {
         if(requestCode == PICK_CONTENT_REQUEST){
             if(resultCode == RESULT_OK){
                 if(settings.contains(CURL)){
-                    DownloadBeaconData sync = new DownloadBeaconData(this);
+                    DownloadBeaconData sync = new DownloadBeaconData();
                     sync.execute(new String[] {settings.getString(CURL,"")});
                 }
                 startService(new Intent(this, beaconSearch.class));
                 Log.d("MAbeacon","Search Start");
+                startActivity(listActivity);
             }
         }
     }
@@ -118,16 +137,13 @@ public class StartActivity extends ActionBarActivity {
     private class DownloadBeaconData extends AsyncTask<String, Void, String>{
 
         public Database db;
-        public Context context;
 
-        public DownloadBeaconData(Context contextin) {
-            context = contextin;
-        }
+
 
         @Override
         protected void onPreExecute(){
             super.onPreExecute();
-            db = new Database(context);
+            db = new Database(getApplicationContext());
             db.removeAll();
         }
 
@@ -137,7 +153,10 @@ public class StartActivity extends ActionBarActivity {
 
             for(String url : urls){
                 DefaultHttpClient client = new DefaultHttpClient();
-                HttpGet httpGet = new HttpGet(url);
+
+                String curl = "http://"+url+"/beacon/all/";
+                Log.i("MAbeacon",curl);
+                HttpGet httpGet = new HttpGet(curl);
 
                 try{
                     HttpResponse execute = client.execute(httpGet);

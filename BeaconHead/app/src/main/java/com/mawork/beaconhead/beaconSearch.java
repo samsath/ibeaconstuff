@@ -1,7 +1,6 @@
 package com.mawork.beaconhead;
 
 import android.app.Service;
-import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,23 +11,19 @@ import com.easibeacon.protocol.IBeacon;
 import com.easibeacon.protocol.IBeaconListener;
 import com.easibeacon.protocol.IBeaconProtocol;
 
-import java.util.ArrayList;
-import java.util.List;
+
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class beaconSearch extends Service implements IBeaconListener{
 
-    public static final int REQUEST_BLUETOOTH_ENABLE = 1;
+
     public static final String BURL = "beaconURL";
     private IBeaconProtocol ibp;
 
     public Database db;
 
     public Context context;
-
-    static SharedPreferences settings;
-    static SharedPreferences.Editor editor;
 
     public beaconSearch() {
     }
@@ -39,12 +34,13 @@ public class beaconSearch extends Service implements IBeaconListener{
         context = getApplicationContext();
 
         Database db = new Database(context);
-        settings = this.getSharedPreferences("MAbeacon",MODE_WORLD_READABLE);
 
         ibp = IBeaconProtocol.getInstance(context);
         ibp.setListener(this);
 
-        BeaconScanFor();
+        //BeaconScanFor();
+
+        scanBeacons();
 
         Log.d("MAbeacon","Search Service Start");
         return null;
@@ -52,7 +48,6 @@ public class beaconSearch extends Service implements IBeaconListener{
 
     public void BeaconScanFor(){
         TimerTask searchIbeaconTask = new TimerTask(){
-
             @Override
             public void run() {
                 scanBeacons();
@@ -92,12 +87,9 @@ public class beaconSearch extends Service implements IBeaconListener{
 
         if(!url.isEmpty()){
             // If the beacon is found then the head pops up
-            startService(new Intent(context, headService.class));
-
-            // saved this in the sharedpreferences
-            editor = settings.edit();
-            editor.putString(BURL,url);
-            editor.apply();
+            Intent intent = new Intent(context, headService.class);
+            intent.putExtra("URL",url);
+            startService(intent);
 
         }
     }
@@ -109,19 +101,18 @@ public class beaconSearch extends Service implements IBeaconListener{
 
     @Override
     public void beaconFound(IBeacon ibeacon) {
-
+        Log.i("MAbeacon","FOUND "+ibeacon.toString());
     }
 
     @Override
     public void searchState(int state) {
-
+        Log.i("MAbeacon","state = "+state);
     }
 
     @Override
     public void operationError(int status) {
         Log.d("MAbeacon","Bluetoother error:"+status);
     }
-
 
     @Override
     public void onDestroy(){

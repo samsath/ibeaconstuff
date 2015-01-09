@@ -76,7 +76,6 @@ public class Database extends SQLiteOpenHelper {
         }
 
         Log.d("MAbeacon","beacon id="+beacon_id);
-        Log.d("MAbeacon",beck.toString());
 
         return beacon_id;
     }

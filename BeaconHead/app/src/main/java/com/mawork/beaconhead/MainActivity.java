@@ -1,34 +1,42 @@
 package com.mawork.beaconhead;
 
-import android.annotation.SuppressLint;
+
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
+
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.os.Build;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ArrayAdapter;
+import android.widget.TextView;
+
+import com.easibeacon.protocol.IBeacon;
+import com.easibeacon.protocol.IBeaconListener;
+import com.easibeacon.protocol.IBeaconProtocol;
+import com.easibeacon.protocol.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements IBeaconListener {
 
 
-    static SharedPreferences settings;
+    private static final int REQUEST_BLUETOOTH_ENABLE = 1;
 
-    public static final String BURL = "beaconURL";
-    public static final String CURL = "contentURL";
+    private static ArrayList<IBeacon> _beacons;
+    private ArrayAdapter<IBeacon> _beaconsAdapter;
+    private static IBeaconProtocol _ibp;
 
     public String url;
     static final int PICK_CONTENT_REQUEST = 5;
@@ -44,16 +52,114 @@ public class MainActivity extends ActionBarActivity {
                     .commit();
         }
 
-        settings = this.getSharedPreferences("MAbeacon",MODE_WORLD_READABLE);
+        if(_beacons == null)
+            _beacons = new ArrayList<IBeacon>();
+        _beaconsAdapter = new ArrayAdapter<IBeacon>(this, android.R.layout.simple_list_item_2, android.R.id.text1, _beacons){
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
 
-        if(settings.contains(BURL)){
-            url = settings.getString(BURL, "");
-            WebViewFragment wvf = new WebViewFragment();
-            wvf.init(url);
-            getSupportFragmentManager().beginTransaction().add(android.R.id.content, wvf).commit();
+                TextView text1 = (TextView) view.findViewById(android.R.id.text1);
+                TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+
+                IBeacon beacon = _beacons.get(position);
+
+                text1.setText(beacon.getUuidHexStringDashed());
+                text2.setText("Major: " + beacon.getMajor() + " Minor: " + beacon.getMinor() + " Distance: " + beacon.getProximity() + "m.");
+                return view;
+            }
+
+
+            public void onTouch(View currentView, MotionEvent event){
+                Intent intent = new Intent(MainActivity.this, WebActivity.class);
+                intent.putExtra("URL",url);
+                startActivity(intent);
+            }
+        };
+
+
+
+        _ibp = IBeaconProtocol.getInstance(this);
+        scanBeacons();
+        _ibp.setListener(this);
+
+    }
+
+    @Override
+    protected void onStop() {
+        _ibp.stopScan();
+        super.onStop();
+    }
+
+    private void scanBeacons(){
+        // Check Bluetooth every time
+        Log.i(Utils.LOG_TAG,"Scanning");
+
+        if(!IBeaconProtocol.configureBluetoothAdapter(this)){
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_BLUETOOTH_ENABLE );
+        }else{
+            if(_ibp.isScanning())
+                _ibp.stopScan();
+            _ibp.reset();
+            _ibp.startScan();
         }
     }
 
+
+
+    // The following methods implement the IBeaconListener interface
+
+    @Override
+    public void beaconFound(IBeacon ibeacon) {
+        _beacons.add(ibeacon);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                _beaconsAdapter.notifyDataSetChanged();
+            }
+        });
+        // here add the service so when it click it will load the item
+
+    }
+
+    @Override
+    public void enterRegion(IBeacon ibeacon) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void exitRegion(IBeacon ibeacon) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void operationError(int status) {
+        Log.i(Utils.LOG_TAG, "Bluetooth error: " + status);
+
+    }
+
+    @Override
+    public void searchState(int state) {
+        if(state == IBeaconProtocol.SEARCH_STARTED){
+            //startRefreshAnimation();
+
+        }else if (state == IBeaconProtocol.SEARCH_END_EMPTY || state == IBeaconProtocol.SEARCH_END_SUCCESS){
+            //stopRefreshAnimation();
+        }
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == REQUEST_BLUETOOTH_ENABLE){
+            if(resultCode == Activity.RESULT_OK){
+                scanBeacons();
+            }
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
